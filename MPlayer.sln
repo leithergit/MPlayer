@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34714.143
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MPlayer", "MPlayer.vcxproj", "{8BA9EACF-E3F3-32C7-8DD6-4EB95DBBE130}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8BA9EACF-E3F3-32C7-8DD6-4EB95DBBE130}.Debug|x86.ActiveCfg = Debug|Win32
+		{8BA9EACF-E3F3-32C7-8DD6-4EB95DBBE130}.Debug|x86.Build.0 = Debug|Win32
+		{8BA9EACF-E3F3-32C7-8DD6-4EB95DBBE130}.Release|x86.ActiveCfg = Release|Win32
+		{8BA9EACF-E3F3-32C7-8DD6-4EB95DBBE130}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {01051167-6ED0-4A7D-8A4B-1EFD7132133A}
+	EndGlobalSection
+EndGlobal
