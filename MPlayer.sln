@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34714.143
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MPlayer", "MPlayer.vcxproj", "{8BA9EACF-E3F3-32C7-8DD6-4EB95DBBE130}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestStdItemModel", "..\TestStdItemModel\TestStdItemModel.vcxproj", "{C048A45B-2679-360E-BC87-82912458CD82}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -15,6 +17,10 @@ Global
 		{8BA9EACF-E3F3-32C7-8DD6-4EB95DBBE130}.Debug|x86.Build.0 = Debug|Win32
 		{8BA9EACF-E3F3-32C7-8DD6-4EB95DBBE130}.Release|x86.ActiveCfg = Release|Win32
 		{8BA9EACF-E3F3-32C7-8DD6-4EB95DBBE130}.Release|x86.Build.0 = Release|Win32
+		{C048A45B-2679-360E-BC87-82912458CD82}.Debug|x86.ActiveCfg = Debug|Win32
+		{C048A45B-2679-360E-BC87-82912458CD82}.Debug|x86.Build.0 = Debug|Win32
+		{C048A45B-2679-360E-BC87-82912458CD82}.Release|x86.ActiveCfg = Release|Win32
+		{C048A45B-2679-360E-BC87-82912458CD82}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

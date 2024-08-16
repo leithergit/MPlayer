@@ -41,7 +41,6 @@ private slots:
     void on_clearButton_clicked();
     void on_volumeSlider_valueChanged(int value);
     void on_positionSlider_sliderMoved(int position);
-    void on_timerStopSpinBox_valueChanged(int arg1);
     void on_playlist_doubleClicked(const QModelIndex &index);
 
     void updateDurationInfo(qint64 currentInfo);
@@ -67,7 +66,8 @@ private:
 	void updatePlaylistSelection();
 	void updateWindowTitle();
 	void volumeDecrease();
-	int originalVolume;
+	float originalVolume;
+    float nDecreaseVolumeStep = 1.0f;
 	bool isVolumeFading;
     int remainingTime = 0;
     QTimer *scheduleTimer;
@@ -76,13 +76,13 @@ private:
     QIcon sequentialIcon;
     QIcon randomIcon;
     QIcon singleLoopIcon;
+    QIcon PlayIcon,PauseIcon;
     Ui::MPlayer *ui;
     QMediaPlayer *player;
     QMediaPlaylist *playlist;
     QTimer *fadeOutTimer;
     QStandardItemModel *playlistModel;
     void setupConnections();
-    void updateButtons();
 	void saveSettings();
 	void loadSettings();
 	void setDefaultSizeAndPosition();

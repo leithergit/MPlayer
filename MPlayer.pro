@@ -1,6 +1,6 @@
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia json
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia
 
 CONFIG += c++17
 
@@ -25,8 +25,35 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-# TagLib
+
+win32 {
 INCLUDEPATH += $$PWD/TagLib/include
 LIBS += -L$$PWD/TagLib/lib -ltag
+#QT += json
+}
 
-QMAKE_POST_LINK += $$quote(cmd /c copy /y $$PWD\\TagLib\\bin\\libtag.dll $$OUT_PWD\\debug)
+android {
+    QT += androidextras
+
+    ANDROID_EXTRA_LIBS += $$[QT_INSTALL_PLUGINS]/platforms/libplugins_platforms_qtforandroid_armeabi-v7a.so
+    # LIBS += -L$$PWD/TagLib.Android/lib/ -ltag
+    # INCLUDEPATH += $$PWD/TagLib.Android/include
+    DISTFILES += \
+        android/AndroidManifest.xml \
+        android/build.gradle \
+        android/gradle.properties \
+        android/gradle/wrapper/gradle-wrapper.jar \
+        android/gradle/wrapper/gradle-wrapper.properties \
+        android/gradlew \
+        android/gradlew.bat \
+        android/res/values/libs.xml \
+        android/res/xml/qtprovider_paths.xml
+
+}
+
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+RESOURCES += \
+    resource.qrc
+
+

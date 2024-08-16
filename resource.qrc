@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="Sequence">res/go-next-5.ico</file>
+        <file alias="Add">res/list-add-2.ico</file>
+        <file alias="Remove">res/list-remove-2.ico</file>
+        <file>res/media-eject-3.ico</file>
+        <file alias="Pause">res/media-playback-pause-6.ico</file>
+        <file alias="Play">res/media-playback-start-6.ico</file>
+        <file alias="Stop">res/media-playback-stop-6.ico</file>
+        <file alias="Loop">res/media-playlist-repeat-2.ico</file>
+        <file alias="Shuffle">res/media-playlist-shuffle-2.ico</file>
+        <file>res/multimedia-audio.ico</file>
+        <file alias="Schedule">res/cairo-clock.ico</file>
+        <file alias="Pre">res/media-seek-backward-6.ico</file>
+        <file alias="Next">res/media-seek-forward-6.ico</file>
+        <file alias="Clear">res/window-close.ico</file>
+        <file alias="Sequential">res/format-indent-more-5.ico</file>
+    </qresource>
+</RCC>

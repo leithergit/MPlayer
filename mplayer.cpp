@@ -9,6 +9,7 @@
 
 #include <QDesktopWidget>
 
+
 #include "taglib/fileref.h"
 #include "taglib/tag.h"
 #include "taglib/mpegfile.h"
@@ -40,22 +41,23 @@ MPlayer::MPlayer(QWidget *parent)
     , ui(new Ui::MPlayer)
     , player(new QMediaPlayer(this))
     , playlist(new QMediaPlaylist(this))
-    , fadeOutTimer(new QTimer(this))
     , playlistModel(new QStandardItemModel(this))
 {
     ui->setupUi(this);
     loadSettings();
     setWindowFlags( Qt::WindowCloseButtonHint);
     loadPlaylist();
-    updateButtons();
     player->setPlaylist(playlist);
     ui->playlist->setModel(playlistModel);
     setupConnections();
 
     currentPlayMode = Sequential;
-    sequentialIcon = QIcon(":/icons/sequential.png");
-    randomIcon = QIcon(":/icons/random.png");
-    singleLoopIcon = QIcon(":/icons/single_loop.png");
+
+    sequentialIcon.addFile(QString::fromUtf8(":/Sequential"), QSize(), QIcon::Normal, QIcon::Off);
+    randomIcon.addFile(QString::fromUtf8(":/Shuffle"), QSize(), QIcon::Normal, QIcon::Off);
+    singleLoopIcon.addFile(QString::fromUtf8(":/Loop"), QSize(), QIcon::Normal, QIcon::Off);
+    PlayIcon.addFile(QString::fromUtf8(":/Play"), QSize(), QIcon::Normal, QIcon::Off);
+    PauseIcon.addFile(QString::fromUtf8(":/Pause"), QSize(), QIcon::Normal, QIcon::Off);
 
     scheduleTimer = new QTimer(this);
     isScheduleActive = false;
@@ -75,6 +77,11 @@ void MPlayer::closeEvent(QCloseEvent* event)
 
 MPlayer::~MPlayer()
 {
+    if (player)
+        player->stop();
+    saveSettings();
+    if (scheduleTimer)
+        scheduleTimer->stop();
     delete ui;
 }
 
@@ -156,32 +163,11 @@ void MPlayer::setupConnections()
     connect(player, &QMediaPlayer::mediaStatusChanged, this, &MPlayer::onMediaStatusChanged);
     connect(player, &QMediaPlayer::stateChanged, this, [this](QMediaPlayer::State state)
     {
-        ui->playButton->setText(state == QMediaPlayer::PlayingState ? "暂停" : "播放");
+        ui->playButton->setToolTip(state == QMediaPlayer::PlayingState ? "暂停" : "播放");
     });
 
-    connect(fadeOutTimer, &QTimer::timeout, this, [this]() {
-        int newVolume = player->volume() - 1;
-        if (newVolume <= 0) {
-            player->stop();
-            fadeOutTimer->stop();
-            player->setVolume(originalVolume);
-        } else {
-            player->setVolume(newVolume);
-        }
-    });
 }
 
-void MPlayer::updateButtons()
-{
-    //ui->playModeButton->setText(playlist->playbackMode() == QMediaPlaylist::Random ? "顺序播放" : "随机播放");
-    //ui->repeatButton->setText(playlist->playbackMode() == QMediaPlaylist::CurrentItemInLoop ? "停止循环" : "单曲循环");
-}
-
-// void MPlayer::loadPlaylist()
-// {
-//     // 这里可以从文件或数据库加载播放列表
-//     updatePlaylistView();
-// }
 
 void MPlayer::savePlaylist()
 {
@@ -257,16 +243,22 @@ void MPlayer::updatePlaylistView()
 
 void MPlayer::on_playButton_clicked()
 {
-    if (player->state() == QMediaPlayer::PlayingState) {
+    if (player->state() == QMediaPlayer::PlayingState)
+    {
         player->pause();
-        ui->playButton->setText("播放");
-    } else {
+        ui->playButton->setToolTip("播放");
+		ui->playButton->setIcon(PlayIcon);
+    } 
+    else 
+    {
         if (playlist->currentIndex() == -1 && playlist->mediaCount() > 0) {
             playlist->setCurrentIndex(0);
         }
         
+        player->setVolume(ui->volumeSlider->value());
         player->play();
-        ui->playButton->setText("暂停");
+        ui->playButton->setToolTip("暂停");
+		ui->playButton->setIcon(PauseIcon);
         updatePlaylistSelection();
     }
 }
@@ -274,7 +266,7 @@ void MPlayer::on_playButton_clicked()
 void MPlayer::on_stopButton_clicked()
 {
     player->stop();
-    ui->playButton->setText("播放");
+    ui->playButton->setToolTip("播放");
 }
 
 void MPlayer::on_prevButton_clicked()
@@ -357,25 +349,13 @@ void MPlayer::durationChanged(qint64 duration)
     ui->positionSlider->setRange(0, duration);
 }
 
-void MPlayer::on_timerStopSpinBox_valueChanged(int arg1)
-{
-    if (arg1 > 0) {
-        originalVolume = player->volume();
-        QTimer::singleShot((arg1 - 1) * 60000, this, [this]() {
-            fadeOutTimer->start(600);  // 1分钟内逐渐降低音量
-        });
-    } else {
-        fadeOutTimer->stop();
-        player->setVolume(originalVolume);
-    }
-}
-
 void MPlayer::on_playlist_doubleClicked(const QModelIndex &index)
 {
 	int row = index.row();
 	playlist->setCurrentIndex(row);
+    player->setVolume(ui->volumeSlider->value());
 	player->play();
-	ui->playButton->setText("暂停");
+	ui->playButton->setToolTip("暂停");
 	updatePlaylistSelection();
 }
 
@@ -391,8 +371,7 @@ void MPlayer::metaDataChanged()
 {
     if (player->isMetaDataAvailable()) {
         /*QString title = player->metaData("Title").toString();
-        QString artist = player->metaData("Artist").toString();*/
-        
+        QString artist = player->metaData("Artist").toString();*/        
 
         QUrl currentMedia = playlist->currentMedia().canonicalUrl();
         QString strFileName = QFileInfo(currentMedia.toLocalFile()).fileName();
@@ -403,84 +382,84 @@ void MPlayer::metaDataChanged()
 
 void MPlayer::loadFileMetadata(const QString &filePath)
 {
-	TagLib::FileRef f(filePath.toStdWString().c_str());
-	if (!f.isNull() && f.tag())
-	{
-		TagLib::Tag* tag = f.tag();
-		QString title = QString::fromStdString(tag->title().to8Bit(true));
-		QString artist = QString::fromStdString(tag->artist().to8Bit(true));
-		QString album = QString::fromStdString(tag->album().to8Bit(true));
+     TagLib::FileRef f(filePath.toLocal8Bit().toStdString().c_str());
+     if (!f.isNull() && f.tag())
+     {
+     	TagLib::Tag* tag = f.tag();
+     	QString title = QString::fromStdString(tag->title().to8Bit(true));
+     	QString artist = QString::fromStdString(tag->artist().to8Bit(true));
+     	QString album = QString::fromStdString(tag->album().to8Bit(true));
 
-		// 显示元数据  		
-		ui->coverLabel->setText(album.isEmpty() ? "Unknown Album" : album);
+     	// 显示元数据
+     	ui->coverLabel->setText(album.isEmpty() ? "Unknown Album" : album);
 
-		// 提取封面图片  
-		QPixmap coverArtImage;
-		QString fileExtension = QFileInfo(filePath).suffix().toLower();
+     	// 提取封面图片
+     	QPixmap coverArtImage;
+     	QString fileExtension = QFileInfo(filePath).suffix().toLower();
 
-		if (fileExtension == "mp3")
-		{
-			TagLib::MPEG::File mpegFile(filePath.toStdWString().c_str());
-			if (mpegFile.isValid() && mpegFile.ID3v2Tag())
-			{
-				TagLib::ID3v2::FrameList frameList = mpegFile.ID3v2Tag()->frameList("APIC");
-				if (!frameList.isEmpty())
-				{
-					TagLib::ID3v2::AttachedPictureFrame* coverFrame = static_cast<TagLib::ID3v2::AttachedPictureFrame*>(frameList.front());
-                    coverArtImage.loadFromData(reinterpret_cast<const uchar*>(coverFrame->picture().data()), coverFrame->picture().size());
-				}
-			}
-		}
-		else if (fileExtension == "flac")
-		{
-			TagLib::FLAC::File flacFile(filePath.toStdWString().c_str());
-			if (flacFile.isValid() && !flacFile.pictureList().isEmpty())
-			{
-				TagLib::FLAC::Picture* cover = flacFile.pictureList().front();
-                coverArtImage.loadFromData(reinterpret_cast<const uchar*>(cover->data().data()), cover->data().size());
-			}
-		}
-		else if (fileExtension == "m4a" || fileExtension == "mp4")
-		{
-			TagLib::MP4::File mp4File(filePath.toStdWString().c_str());
-			if (mp4File.isValid() && mp4File.tag())
-			{
-				TagLib::MP4::Tag* mp4tag = mp4File.tag();
-				TagLib::MP4::ItemMap items = mp4tag->itemMap();
-				if (items.contains("covr"))
-				{
-					TagLib::MP4::CoverArtList coverArtList = items["covr"].toCoverArtList();
-					if (!coverArtList.isEmpty())
-					{
-						TagLib::MP4::CoverArt coverArt = coverArtList.front();
-                        TagLib::MP4::CoverArt::Format  nF = coverArt.format();
-						QByteArray imageData(coverArt.data().data(), coverArt.data().size());
-						coverArtImage.loadFromData(imageData);
-					}
-				}
-			}
-		}
-		// 可以根据需要添加更多文件类型的处理  
+     	if (fileExtension == "mp3")
+     	{
+             TagLib::MPEG::File mpegFile(filePath.toLocal8Bit().toStdString().c_str());
+     		if (mpegFile.isValid() && mpegFile.ID3v2Tag())
+     		{
+     			TagLib::ID3v2::FrameList frameList = mpegFile.ID3v2Tag()->frameList("APIC");
+     			if (!frameList.isEmpty())
+     			{
+     				TagLib::ID3v2::AttachedPictureFrame* coverFrame = static_cast<TagLib::ID3v2::AttachedPictureFrame*>(frameList.front());
+                     coverArtImage.loadFromData(reinterpret_cast<const uchar*>(coverFrame->picture().data()), coverFrame->picture().size());
+     			}
+     		}
+     	}
+     	else if (fileExtension == "flac")
+     	{
+             TagLib::FLAC::File flacFile(filePath.toLocal8Bit().toStdString().c_str());
+     		if (flacFile.isValid() && !flacFile.pictureList().isEmpty())
+     		{
+     			TagLib::FLAC::Picture* cover = flacFile.pictureList().front();
+                 coverArtImage.loadFromData(reinterpret_cast<const uchar*>(cover->data().data()), cover->data().size());
+     		}
+     	}
+     	else if (fileExtension == "m4a" || fileExtension == "mp4")
+     	{
+             TagLib::MP4::File mp4File(filePath.toLocal8Bit().toStdString().c_str());
+     		if (mp4File.isValid() && mp4File.tag())
+     		{
+     			TagLib::MP4::Tag* mp4tag = mp4File.tag();
+     			TagLib::MP4::ItemMap items = mp4tag->itemMap();
+     			if (items.contains("covr"))
+     			{
+     				TagLib::MP4::CoverArtList coverArtList = items["covr"].toCoverArtList();
+     				if (!coverArtList.isEmpty())
+     				{
+     					TagLib::MP4::CoverArt coverArt = coverArtList.front();
+                         TagLib::MP4::CoverArt::Format  nF = coverArt.format();
+     					QByteArray imageData(coverArt.data().data(), coverArt.data().size());
+     					coverArtImage.loadFromData(imageData);
+     				}
+     			}
+     		}
+     	}
+     	// 可以根据需要添加更多文件类型的处理
 
-		// 显示封面图片  
-		if (!coverArtImage.isNull())
-		{
-            ui->coverLabel->show();
-			ui->coverLabel->setPixmap(coverArtImage.scaled(ui->coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-            ui->label_Title->setText(title);
-            ui->label_Artist->setText(artist);
-            ui->label_Album->setText(album);
-		}
-		else
-		{
-            ui->coverLabel->hide();
-		}
-	}
-	else
-	{
+     	// 显示封面图片
+     	if (!coverArtImage.isNull())
+     	{
+             ui->coverLabel->show();
+     		ui->coverLabel->setPixmap(coverArtImage.scaled(ui->coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+             ui->label_Title->setText(title);
+             ui->label_Artist->setText(artist);
+             ui->label_Album->setText(album);
+     	}
+     	else
+     	{
+             ui->coverLabel->hide();
+     	}
+     }
+     else
+     {
 		
-        ui->coverLabel->hide();
-	}
+         ui->coverLabel->hide();
+     }
 }
 
 void MPlayer::updatePlayMode()
@@ -488,16 +467,19 @@ void MPlayer::updatePlayMode()
     switch(currentPlayMode) {
     case Sequential:
         ui->playModeButton->setIcon(sequentialIcon);
+        //ui->playModeButton->setText("顺序播放");
         ui->playModeButton->setToolTip("顺序播放");
         playlist->setPlaybackMode(QMediaPlaylist::Sequential);
         break;
     case Random:
         ui->playModeButton->setIcon(randomIcon);
+        //ui->playModeButton->setText("随机播放");
         ui->playModeButton->setToolTip("随机播放");
         playlist->setPlaybackMode(QMediaPlaylist::Random);
         break;
     case SingleLoop:
         ui->playModeButton->setIcon(singleLoopIcon);
+        //ui->playModeButton->setText("单曲循环");
         ui->playModeButton->setToolTip("单曲循环");
         playlist->setPlaybackMode(QMediaPlaylist::CurrentItemInLoop);
         break;
@@ -525,6 +507,7 @@ void MPlayer::on_SchuduleButton_clicked()
 {
     if (!isScheduleActive) 
     {
+        isVolumeFading = false;
         // 激活定时器
         int minutes = ui->timerStopSpinBox->value();
         if (minutes > 0) 
@@ -560,14 +543,24 @@ void MPlayer::updateWindowTitle()
 
 void MPlayer::Update()
 {
-	if (remainingTime <= 30 && !isVolumeFading)  // 最后30秒  
-		volumeDecrease();
+    if (remainingTime <= 30 && !isVolumeFading)  // 最后30秒  
+    {
+		originalVolume = (float)player->volume();
+		nDecreaseVolumeStep = (float)originalVolume / 30;
+		isVolumeFading = true;
+    }
 	
-	if (isVolumeFading) {
-		int currentVolume = player->volume();
-		if (currentVolume > 0) {
-			player->setVolume(currentVolume - 1);
-			ui->volumeSlider->setValue(currentVolume - 1);
+	if (isVolumeFading) 
+    {
+		if (originalVolume > 0)
+        {
+            originalVolume -= nDecreaseVolumeStep;
+            if (originalVolume <= 0.0f)
+            {
+				originalVolume = 0.0f;
+			}
+			player->setVolume((int)originalVolume);
+			ui->volumeSlider->setValue((int)originalVolume);
 		}
 	}
 

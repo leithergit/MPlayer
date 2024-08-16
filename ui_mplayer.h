@@ -10,6 +10,7 @@
 #define UI_MPLAYER_H
 
 #include <QtCore/QVariant>
+#include <QtGui/QIcon>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
@@ -63,7 +64,7 @@ public:
     {
         if (MPlayer->objectName().isEmpty())
             MPlayer->setObjectName(QString::fromUtf8("MPlayer"));
-        MPlayer->resize(322, 407);
+        MPlayer->resize(246, 407);
         verticalLayout = new QVBoxLayout(MPlayer);
         verticalLayout->setSpacing(2);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
@@ -143,31 +144,51 @@ public:
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
         playButton = new QPushButton(MPlayer);
         playButton->setObjectName(QString::fromUtf8("playButton"));
-        playButton->setMinimumSize(QSize(60, 24));
+        playButton->setMinimumSize(QSize(40, 24));
+        QIcon icon;
+        icon.addFile(QString::fromUtf8(":/Play"), QSize(), QIcon::Normal, QIcon::Off);
+        playButton->setIcon(icon);
+        playButton->setIconSize(QSize(24, 24));
 
         horizontalLayout->addWidget(playButton);
 
         stopButton = new QPushButton(MPlayer);
         stopButton->setObjectName(QString::fromUtf8("stopButton"));
-        stopButton->setMinimumSize(QSize(60, 24));
+        stopButton->setMinimumSize(QSize(40, 24));
+        QIcon icon1;
+        icon1.addFile(QString::fromUtf8(":/Stop"), QSize(), QIcon::Normal, QIcon::Off);
+        stopButton->setIcon(icon1);
+        stopButton->setIconSize(QSize(24, 24));
 
         horizontalLayout->addWidget(stopButton);
 
         prevButton = new QPushButton(MPlayer);
         prevButton->setObjectName(QString::fromUtf8("prevButton"));
-        prevButton->setMinimumSize(QSize(60, 24));
+        prevButton->setMinimumSize(QSize(40, 24));
+        QIcon icon2;
+        icon2.addFile(QString::fromUtf8(":/Pre"), QSize(), QIcon::Normal, QIcon::Off);
+        prevButton->setIcon(icon2);
+        prevButton->setIconSize(QSize(24, 24));
 
         horizontalLayout->addWidget(prevButton);
 
         nextButton = new QPushButton(MPlayer);
         nextButton->setObjectName(QString::fromUtf8("nextButton"));
-        nextButton->setMinimumSize(QSize(60, 24));
+        nextButton->setMinimumSize(QSize(40, 24));
+        QIcon icon3;
+        icon3.addFile(QString::fromUtf8(":/Next"), QSize(), QIcon::Normal, QIcon::Off);
+        nextButton->setIcon(icon3);
+        nextButton->setIconSize(QSize(24, 24));
 
         horizontalLayout->addWidget(nextButton);
 
         playModeButton = new QPushButton(MPlayer);
         playModeButton->setObjectName(QString::fromUtf8("playModeButton"));
-        playModeButton->setMinimumSize(QSize(60, 24));
+        playModeButton->setMinimumSize(QSize(40, 24));
+        QIcon icon4;
+        icon4.addFile(QString::fromUtf8(":/Loop"), QSize(), QIcon::Normal, QIcon::Off);
+        playModeButton->setIcon(icon4);
+        playModeButton->setIconSize(QSize(24, 24));
 
         horizontalLayout->addWidget(playModeButton);
 
@@ -205,6 +226,11 @@ public:
         SchuduleButton->setObjectName(QString::fromUtf8("SchuduleButton"));
         SchuduleButton->setMinimumSize(QSize(40, 0));
         SchuduleButton->setMaximumSize(QSize(60, 16777215));
+        QIcon icon5;
+        icon5.addFile(QString::fromUtf8(":/Schedule"), QSize(), QIcon::Normal, QIcon::Off);
+        SchuduleButton->setIcon(icon5);
+        SchuduleButton->setIconSize(QSize(24, 24));
+        SchuduleButton->setCheckable(true);
 
         horizontalLayout_3->addWidget(SchuduleButton);
 
@@ -231,19 +257,31 @@ public:
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         addButton = new QPushButton(MPlayer);
         addButton->setObjectName(QString::fromUtf8("addButton"));
-        addButton->setMinimumSize(QSize(60, 24));
+        addButton->setMinimumSize(QSize(40, 24));
+        QIcon icon6;
+        icon6.addFile(QString::fromUtf8(":/Add"), QSize(), QIcon::Normal, QIcon::Off);
+        addButton->setIcon(icon6);
+        addButton->setIconSize(QSize(24, 24));
 
         horizontalLayout_2->addWidget(addButton);
 
         removeButton = new QPushButton(MPlayer);
         removeButton->setObjectName(QString::fromUtf8("removeButton"));
-        removeButton->setMinimumSize(QSize(60, 24));
+        removeButton->setMinimumSize(QSize(40, 24));
+        QIcon icon7;
+        icon7.addFile(QString::fromUtf8(":/Remove"), QSize(), QIcon::Normal, QIcon::Off);
+        removeButton->setIcon(icon7);
+        removeButton->setIconSize(QSize(24, 24));
 
         horizontalLayout_2->addWidget(removeButton);
 
         clearButton = new QPushButton(MPlayer);
         clearButton->setObjectName(QString::fromUtf8("clearButton"));
-        clearButton->setMinimumSize(QSize(60, 24));
+        clearButton->setMinimumSize(QSize(40, 24));
+        QIcon icon8;
+        icon8.addFile(QString::fromUtf8(":/Clear"), QSize(), QIcon::Normal, QIcon::Off);
+        clearButton->setIcon(icon8);
+        clearButton->setIconSize(QSize(24, 24));
 
         horizontalLayout_2->addWidget(clearButton);
 
@@ -264,21 +302,48 @@ public:
         label_Album->setText(QString());
         songInfoLabel->setText(QString());
         timeLabel->setText(QCoreApplication::translate("MPlayer", "00:00 / 00:00", nullptr));
-        playButton->setText(QCoreApplication::translate("MPlayer", "\346\222\255\346\224\276", nullptr));
-        stopButton->setText(QCoreApplication::translate("MPlayer", "\345\201\234\346\255\242", nullptr));
-        prevButton->setText(QCoreApplication::translate("MPlayer", "\344\270\212\344\270\200\351\246\226", nullptr));
-        nextButton->setText(QCoreApplication::translate("MPlayer", "\344\270\213\344\270\200\351\246\226", nullptr));
-        playModeButton->setText(QCoreApplication::translate("MPlayer", "\351\232\217\346\234\272\346\222\255\346\224\276", nullptr));
+#if QT_CONFIG(tooltip)
+        playButton->setToolTip(QCoreApplication::translate("MPlayer", "\346\222\255\346\224\276", nullptr));
+#endif // QT_CONFIG(tooltip)
+        playButton->setText(QString());
+#if QT_CONFIG(tooltip)
+        stopButton->setToolTip(QCoreApplication::translate("MPlayer", "\345\201\234\346\255\242", nullptr));
+#endif // QT_CONFIG(tooltip)
+        stopButton->setText(QString());
+#if QT_CONFIG(tooltip)
+        prevButton->setToolTip(QCoreApplication::translate("MPlayer", "\344\270\212\344\270\200\351\246\226", nullptr));
+#endif // QT_CONFIG(tooltip)
+        prevButton->setText(QString());
+#if QT_CONFIG(tooltip)
+        nextButton->setToolTip(QCoreApplication::translate("MPlayer", "\344\270\213\344\270\200\351\246\226", nullptr));
+#endif // QT_CONFIG(tooltip)
+        nextButton->setText(QString());
+#if QT_CONFIG(tooltip)
+        playModeButton->setToolTip(QCoreApplication::translate("MPlayer", "\351\232\217\346\234\272\346\222\255\346\224\276", nullptr));
+#endif // QT_CONFIG(tooltip)
+        playModeButton->setText(QString());
         label->setText(QCoreApplication::translate("MPlayer", "\351\237\263\351\207\217", nullptr));
         label_2->setText(QCoreApplication::translate("MPlayer", "\346\227\266\351\225\277(\345\210\206)", nullptr));
-        SchuduleButton->setText(QCoreApplication::translate("MPlayer", "\345\256\232\346\227\266", nullptr));
+#if QT_CONFIG(tooltip)
+        SchuduleButton->setToolTip(QCoreApplication::translate("MPlayer", "\345\256\232\346\227\266", nullptr));
+#endif // QT_CONFIG(tooltip)
+        SchuduleButton->setText(QString());
         OperationcomboBox->setItemText(0, QCoreApplication::translate("MPlayer", "\345\201\234\346\255\242", nullptr));
         OperationcomboBox->setItemText(1, QCoreApplication::translate("MPlayer", "\344\275\223\347\234\240", nullptr));
         OperationcomboBox->setItemText(2, QCoreApplication::translate("MPlayer", "\345\205\263\346\234\272", nullptr));
 
-        addButton->setText(QCoreApplication::translate("MPlayer", "\346\267\273\345\212\240", nullptr));
-        removeButton->setText(QCoreApplication::translate("MPlayer", "\347\247\273\351\231\244", nullptr));
-        clearButton->setText(QCoreApplication::translate("MPlayer", "\346\270\205\347\251\272", nullptr));
+#if QT_CONFIG(tooltip)
+        addButton->setToolTip(QCoreApplication::translate("MPlayer", "\346\267\273\345\212\240", nullptr));
+#endif // QT_CONFIG(tooltip)
+        addButton->setText(QString());
+#if QT_CONFIG(tooltip)
+        removeButton->setToolTip(QCoreApplication::translate("MPlayer", "\347\247\273\351\231\244", nullptr));
+#endif // QT_CONFIG(tooltip)
+        removeButton->setText(QString());
+#if QT_CONFIG(tooltip)
+        clearButton->setToolTip(QCoreApplication::translate("MPlayer", "\346\270\205\347\251\272", nullptr));
+#endif // QT_CONFIG(tooltip)
+        clearButton->setText(QString());
     } // retranslateUi
 
 };

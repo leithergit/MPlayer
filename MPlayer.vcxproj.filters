@@ -62,4 +62,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="resource.qrc">
+      <Filter>Source Files</Filter>
+    </QtRcc>
+  </ItemGroup>
 </Project>

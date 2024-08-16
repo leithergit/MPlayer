@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>322</width>
+    <width>246</width>
     <height>407</height>
    </rect>
   </property>
@@ -191,12 +191,25 @@
       <widget class="QPushButton" name="playButton">
        <property name="minimumSize">
         <size>
-         <width>60</width>
+         <width>40</width>
          <height>24</height>
         </size>
        </property>
-       <property name="text">
+       <property name="toolTip">
         <string>播放</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resource.qrc">
+         <normaloff>:/Play</normaloff>:/Play</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -204,12 +217,25 @@
       <widget class="QPushButton" name="stopButton">
        <property name="minimumSize">
         <size>
-         <width>60</width>
+         <width>40</width>
          <height>24</height>
         </size>
        </property>
-       <property name="text">
+       <property name="toolTip">
         <string>停止</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resource.qrc">
+         <normaloff>:/Stop</normaloff>:/Stop</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -217,12 +243,25 @@
       <widget class="QPushButton" name="prevButton">
        <property name="minimumSize">
         <size>
-         <width>60</width>
+         <width>40</width>
          <height>24</height>
         </size>
        </property>
-       <property name="text">
+       <property name="toolTip">
         <string>上一首</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resource.qrc">
+         <normaloff>:/Pre</normaloff>:/Pre</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -230,12 +269,25 @@
       <widget class="QPushButton" name="nextButton">
        <property name="minimumSize">
         <size>
-         <width>60</width>
+         <width>40</width>
          <height>24</height>
         </size>
        </property>
-       <property name="text">
+       <property name="toolTip">
         <string>下一首</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resource.qrc">
+         <normaloff>:/Next</normaloff>:/Next</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -243,12 +295,25 @@
       <widget class="QPushButton" name="playModeButton">
        <property name="minimumSize">
         <size>
-         <width>60</width>
+         <width>40</width>
          <height>24</height>
         </size>
        </property>
-       <property name="text">
+       <property name="toolTip">
         <string>随机播放</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resource.qrc">
+         <normaloff>:/Loop</normaloff>:/Loop</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -307,8 +372,24 @@
          <height>16777215</height>
         </size>
        </property>
-       <property name="text">
+       <property name="toolTip">
         <string>定时</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resource.qrc">
+         <normaloff>:/Schedule</normaloff>:/Schedule</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -358,12 +439,25 @@
       <widget class="QPushButton" name="addButton">
        <property name="minimumSize">
         <size>
-         <width>60</width>
+         <width>40</width>
          <height>24</height>
         </size>
        </property>
-       <property name="text">
+       <property name="toolTip">
         <string>添加</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resource.qrc">
+         <normaloff>:/Add</normaloff>:/Add</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -371,12 +465,25 @@
       <widget class="QPushButton" name="removeButton">
        <property name="minimumSize">
         <size>
-         <width>60</width>
+         <width>40</width>
          <height>24</height>
         </size>
        </property>
-       <property name="text">
+       <property name="toolTip">
         <string>移除</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resource.qrc">
+         <normaloff>:/Remove</normaloff>:/Remove</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -384,12 +491,25 @@
       <widget class="QPushButton" name="clearButton">
        <property name="minimumSize">
         <size>
-         <width>60</width>
+         <width>40</width>
          <height>24</height>
         </size>
        </property>
-       <property name="text">
+       <property name="toolTip">
         <string>清空</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resource.qrc">
+         <normaloff>:/Clear</normaloff>:/Clear</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -397,6 +517,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>
