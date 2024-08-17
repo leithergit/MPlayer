@@ -8,7 +8,7 @@
 #include <QSettings>
 
 #include <QDesktopWidget>
-
+#include <QOperatingSystemVersion>  
 
 #include "taglib/fileref.h"
 #include "taglib/tag.h"
@@ -43,6 +43,22 @@ MPlayer::MPlayer(QWidget *parent)
     , playlist(new QMediaPlaylist(this))
     , playlistModel(new QStandardItemModel(this))
 {
+#ifdef Q_OS_WIN  
+	if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10) {
+		HWND hwnd = (HWND)this->winId();
+		BOOL value = TRUE;
+		DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+
+		// 设置标题栏颜色  
+		COLORREF darkColor = RGB(53, 53, 53);  // 深灰色  
+		DwmSetWindowAttribute(hwnd, DWMWA_CAPTION_COLOR, &darkColor, sizeof(darkColor));
+
+		// 设置标题文本颜色  
+		COLORREF textColor = RGB(255, 255, 255);  // 白色  
+		DwmSetWindowAttribute(hwnd, DWMWA_TEXT_COLOR, &textColor, sizeof(textColor));
+	}
+#endif 
+
     ui->setupUi(this);
     loadSettings();
     setWindowFlags( Qt::WindowCloseButtonHint);
@@ -439,13 +455,15 @@ void MPlayer::loadFileMetadata(const QString &filePath)
      			}
      		}
      	}
-     	// 可以根据需要添加更多文件类型的处理
 
      	// 显示封面图片
      	if (!coverArtImage.isNull())
      	{
              ui->coverLabel->show();
-     		ui->coverLabel->setPixmap(coverArtImage.scaled(ui->coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+			 ui->label_Title->show();
+			 ui->label_Artist->show();
+			 ui->label_Album->show();
+     		 ui->coverLabel->setPixmap(coverArtImage.scaled(ui->coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
              ui->label_Title->setText(title);
              ui->label_Artist->setText(artist);
              ui->label_Album->setText(album);
@@ -453,12 +471,17 @@ void MPlayer::loadFileMetadata(const QString &filePath)
      	else
      	{
              ui->coverLabel->hide();
+			 ui->label_Title->hide();
+			 ui->label_Artist->hide();
+			 ui->label_Album->hide();
      	}
      }
      else
      {
-		
          ui->coverLabel->hide();
+		 ui->label_Title->hide();
+		 ui->label_Artist->hide();
+		 ui->label_Album->hide();
      }
 }
 
@@ -607,13 +630,38 @@ void MPlayer::onCurrentMediaChanged(const QMediaContent& content)
     updatePlaylistSelection();
 
     // 更新播放列表项的颜色  
-    for (int i = 0; i < playlistModel->rowCount(); ++i) {
-        QModelIndex index = playlistModel->index(i, 0);
-        if (i == playlist->currentIndex()) {
-            playlistModel->setData(index, QBrush(Qt::red), Qt::ForegroundRole);
-        }
-        else {
-            playlistModel->setData(index, QBrush(Qt::black), Qt::ForegroundRole);
-        }
-    }
+	for (int i = 0; i < playlistModel->rowCount(); ++i) {
+		QModelIndex index = playlistModel->index(i, 0);
+		if (i == playlist->currentIndex()) {
+			playlistModel->setData(index, QBrush(Qt::red), Qt::ForegroundRole);
+		}
+		else {
+			playlistModel->setData(index, QBrush(Qt::white), Qt::ForegroundRole);
+		}
+	}
 }
+
+#ifdef Q_OS_WIN  
+
+// 在您的主窗口类中  
+//bool MPlayer::nativeEvent(const QByteArray& eventType, void* message, long* result)
+//{
+//	Q_UNUSED(eventType);
+//	Q_UNUSED(result);
+//
+//	MSG* msg = static_cast<MSG*>(message);
+//	if (msg->message == WM_NCCALCSIZE && msg->wParam == TRUE) {
+//		DWORD style = GetWindowLong((HWND)winId(), GWL_STYLE);
+//		if (style & WS_MAXIMIZE) {
+//			NCCALCSIZE_PARAMS* params = reinterpret_cast<NCCALCSIZE_PARAMS*>(msg->lParam);
+//			params->rgrc[0].top += 1;
+//		}
+//	}
+//	else if (msg->message == WM_CREATE) {
+//		COLORREF darkColor = RGB(53, 53, 53);  // 使用您想要的深色  
+//		DwmSetWindowAttribute((HWND)winId(), DWMWA_CAPTION_COLOR, &darkColor, sizeof(darkColor));
+//	}
+//
+//	return false;
+//}
+#endif

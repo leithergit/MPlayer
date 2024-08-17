@@ -13,6 +13,11 @@
 #include <QJsonDocument>
 #include <QEvent>
 #include <QCloseEvent>
+#ifdef Q_OS_WIN  
+#include <windows.h>  
+#include <dwmapi.h>  
+#pragma comment(lib, "dwmapi.lib")  
+#endif
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -30,6 +35,9 @@ public:
 
 protected:
 	void closeEvent(QCloseEvent* event) override;
+#ifdef Q_OS_WIN  
+	//bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
+#endif
 private slots:
     void on_playModeButton_clicked();
     void on_playButton_clicked();

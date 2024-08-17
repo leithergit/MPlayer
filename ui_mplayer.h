@@ -118,7 +118,9 @@ public:
 
         songInfoLabel = new QLabel(MPlayer);
         songInfoLabel->setObjectName(QString::fromUtf8("songInfoLabel"));
+        songInfoLabel->setMinimumSize(QSize(0, 25));
         songInfoLabel->setAlignment(Qt::AlignmentFlag::AlignCenter);
+        songInfoLabel->setWordWrap(true);
 
         verticalLayout->addWidget(songInfoLabel);
 
