@@ -6,6 +6,9 @@
 #include <QStandardPaths>
 #include <QProcess>
 #include <QSettings>
+#include <thread>
+#include <chrono>
+#include <QObject>
 
 #include <QDesktopWidget>
 #include <QOperatingSystemVersion>  
@@ -36,14 +39,59 @@
 #include <taglib/mp4coverart.h>  
 
 
+#include <QComboBox>  
+#include <QFontMetrics>  
+#include <QApplication>  
+#include <QStyle>  
+using namespace std;
+
+void adjustComboBoxWidth(QComboBox* pComboBox)
+{
+	if (!pComboBox)
+		return;
+
+	int maxWidth = 0;
+	QFontMetrics fontMetrics(pComboBox->font());
+
+	for (int i = 0; i < pComboBox->count(); ++i)
+	{
+		QIcon icon = pComboBox->itemIcon(i);
+		int iconWidth = icon.isNull() ? 0 : pComboBox->iconSize().width() + 4; // 4 for padding  
+		int textWidth = fontMetrics.horizontalAdvance(pComboBox->itemText(i));
+		int itemWidth = iconWidth + textWidth;
+		maxWidth = qMax(maxWidth, itemWidth);
+	}
+
+	// Add some padding  
+	maxWidth += 20;
+
+	// Calculate the width of the drop-down arrow and frame  
+	QStyleOptionComboBox opt;
+	opt.initFrom(pComboBox);
+	int arrowWidth = pComboBox->style()->pixelMetric(QStyle::PM_MenuButtonIndicator, &opt, pComboBox);
+	int frameWidth = pComboBox->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, &opt, pComboBox) * 2;
+
+	// Add the width of the drop-down arrow, frame, and some extra space  
+    maxWidth += arrowWidth + frameWidth ;
+
+	// Set the width  
+	pComboBox->setMinimumWidth(maxWidth);
+	pComboBox->view()->setMinimumWidth(maxWidth - arrowWidth - frameWidth);
+}
+
 MPlayer::MPlayer(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::MPlayer)
     , player(new QMediaPlayer(this))
     , playlist(new QMediaPlaylist(this))
     , playlistModel(new QStandardItemModel(this))
+	, reinitTimer(new QTimer(this))
+	, lastPosition(0)
 {
+    this->setWindowIcon(QIcon(":/App"));
 #ifdef Q_OS_WIN  
+	reinitTimer->setSingleShot(true);
+	connect(reinitTimer, &QTimer::timeout, this, &MPlayer::reinitializePlayer);
 	if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10) {
 		HWND hwnd = (HWND)this->winId();
 		BOOL value = TRUE;
@@ -57,14 +105,54 @@ MPlayer::MPlayer(QWidget *parent)
 		COLORREF textColor = RGB(255, 255, 255);  // 白色  
 		DwmSetWindowAttribute(hwnd, DWMWA_TEXT_COLOR, &textColor, sizeof(textColor));
 	}
+
+	SetWindowLong((HWND)this->winId(), GWLP_USERDATA, (LONG)this);
+	// 注册电源设置通知  
+	m_powerNotify = RegisterPowerSettingNotification((HWND)this->winId(),&GUID_POWERSCHEME_PERSONALITY,	DEVICE_NOTIFY_WINDOW_HANDLE);
+
 #endif 
 
     ui->setupUi(this);
+    adjustComboBoxWidth(ui->OperationcomboBox);
     loadSettings();
     setWindowFlags( Qt::WindowCloseButtonHint);
     loadPlaylist();
     player->setPlaylist(playlist);
     ui->playlist->setModel(playlistModel);
+    if ((lastPlayedIndex >= 0 && lastPlayedIndex < playlist->mediaCount()) && 
+        bPlayingBeforeClose  )
+    {
+		singlePlayTimer = new QTimer(this);
+        // 仅执行一次的定时器，one shot
+        QTimer::singleShot(500, this, [&]() 
+        {
+			if (playlist->mediaCount() > 0) 
+            {
+				playlist->setCurrentIndex(lastPlayedIndex);
+				player->setVolume(ui->volumeSlider->value());
+                player->play();
+                ui->playButton->setToolTip("暂停");
+				ui->playButton->setIcon(PauseIcon);
+                positionChangedConnect = connect(player, &QMediaPlayer::positionChanged, this, [this](qint64 position)
+				{
+                    player->setPosition(lastPlayedPosition);
+					disconnect(positionChangedConnect);
+				});
+				               
+				/*seekkableConnect = connect(player, &QMediaPlayer::seekableChanged, this, [this](bool seekable)
+                {
+					if (seekable) 
+                    {
+						player->setPosition(lastPlayedPosition);
+					}
+                    disconnect(seekkableConnect);
+				});*/
+
+				updatePlaylistSelection();
+			}
+        });
+    }
+
     setupConnections();
 
     currentPlayMode = Sequential;
@@ -87,12 +175,21 @@ MPlayer::MPlayer(QWidget *parent)
 
 void MPlayer::closeEvent(QCloseEvent* event)
 {
+    savePlaylist();
 	saveSettings();
 	event->accept();
 }
 
 MPlayer::~MPlayer()
 {
+
+#ifdef Q_OS_WIN  
+	if (m_powerNotify)
+	{
+		UnregisterPowerSettingNotification(m_powerNotify);
+	}
+#endif 
+
     if (player)
         player->stop();
     saveSettings();
@@ -197,8 +294,10 @@ void MPlayer::savePlaylist()
     }
 
     playlistObject["tracks"] = tracksArray;
-    playlistObject["lastPlayed"] = player->currentMedia().request().url().toString();
+    playlistObject["lastPlayedIndex"] = player->playlist()->currentIndex();
     playlistObject["position"] = player->position();
+	playlistObject["playmode"] = (int)currentPlayMode;
+	playlistObject["PlayingBeforeClose"] = player->state() == QMediaPlayer::PlayingState;
 
     QJsonDocument doc(playlistObject);
     QFile file("playlist.json");
@@ -222,9 +321,11 @@ void MPlayer::loadPlaylist()
             playlist->addMedia(QUrl(trackObject["url"].toString()));
         }
 		qDebug() << "Songs = " << playlist->mediaCount();
-        lastPlayedFile = playlistObject["lastPlayed"].toString();
+        lastPlayedIndex = playlistObject["lastPlayedIndex"].toInt();
         lastPlayedPosition = playlistObject["position"].toInt();
-
+		currentPlayMode = (PlayMode)playlistObject["playmode"].toInt();
+		bPlayingBeforeClose = playlistObject["PlayingBeforeClose"].toBool();
+        updatePlayMode();
         file.close();
     }
     updatePlaylistView();
@@ -237,7 +338,7 @@ void MPlayer::onPlaylistChanged()
 
 void MPlayer::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
 {
-    if (status == QMediaPlayer::LoadedMedia && player->currentMedia().canonicalUrl().toString() == lastPlayedFile) {
+    if (status == QMediaPlayer::LoadedMedia && player->currentMedia().canonicalUrl().toString() == lastPlayedIndex) {
         player->setPosition(lastPlayedPosition);
         if (player->state() != QMediaPlayer::PlayingState) {
             player->pause(); // 确保不自动播放
@@ -371,6 +472,8 @@ void MPlayer::on_playlist_doubleClicked(const QModelIndex &index)
 	playlist->setCurrentIndex(row);
     player->setVolume(ui->volumeSlider->value());
 	player->play();
+    
+    ui->playButton->setIcon(PauseIcon);
 	ui->playButton->setToolTip("暂停");
 	updatePlaylistSelection();
 }
@@ -641,27 +744,100 @@ void MPlayer::onCurrentMediaChanged(const QMediaContent& content)
 	}
 }
 
-#ifdef Q_OS_WIN  
+void MPlayer::on_restartButton_clicked()
+{
+    if (player->mediaStatus() == QMediaPlayer::LoadedMedia ||
+        player->mediaStatus() == QMediaPlayer::BufferedMedia ||
+        player->state() == QMediaPlayer::PlayingState ||
+        player->state() == QMediaPlayer::PausedState)
+    {
+        player->setPosition(0);
+        if (player->state() != QMediaPlayer::PlayingState)
+        {
+            player->play();
+        }
+    }
+}
 
-// 在您的主窗口类中  
-//bool MPlayer::nativeEvent(const QByteArray& eventType, void* message, long* result)
-//{
-//	Q_UNUSED(eventType);
-//	Q_UNUSED(result);
-//
-//	MSG* msg = static_cast<MSG*>(message);
-//	if (msg->message == WM_NCCALCSIZE && msg->wParam == TRUE) {
-//		DWORD style = GetWindowLong((HWND)winId(), GWL_STYLE);
-//		if (style & WS_MAXIMIZE) {
-//			NCCALCSIZE_PARAMS* params = reinterpret_cast<NCCALCSIZE_PARAMS*>(msg->lParam);
-//			params->rgrc[0].top += 1;
-//		}
-//	}
-//	else if (msg->message == WM_CREATE) {
-//		COLORREF darkColor = RGB(53, 53, 53);  // 使用您想要的深色  
-//		DwmSetWindowAttribute((HWND)winId(), DWMWA_CAPTION_COLOR, &darkColor, sizeof(darkColor));
-//	}
-//
-//	return false;
-//}
-#endif
+bool MPlayer::nativeEvent(const QByteArray& eventType, void* message, long* result)
+{
+#ifdef Q_OS_WIN  
+    //qDebug() << __FUNCTION__;
+	MSG* msg = static_cast<MSG*>(message);
+	//qDebug() << __FUNCTION__ << " msg->message = " << msg->message;
+	if (msg->message == WM_POWERBROADCAST)
+	{
+        qDebug() << __FUNCTION__ << " msg->message = " << msg->message << " msg->wParam"<< msg->wParam;
+		switch (msg->wParam)
+		{
+		case PBT_APMSUSPEND:
+			// 系统即将进入休眠状态  
+            qDebug() << __FUNCTION__;
+			lastPosition = player->position();
+			currentMedia = player->media();
+			wasPlaying = (player->state() == QMediaPlayer::PlayingState);
+			player->stop();
+			break;
+		case PBT_APMRESUMEAUTOMATIC:
+		case PBT_APMRESUMESUSPEND:
+			// 系统从休眠状态恢复  
+			handleSystemResume();
+			break;
+		}
+	}
+#endif  
+	return QDialog::nativeEvent(eventType, message, result);
+}
+
+#ifdef Q_OS_WIN  
+LRESULT CALLBACK MPlayer::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	if (message == WM_POWERBROADCAST)
+	{
+        MPlayer* pWindow = reinterpret_cast<MPlayer*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+		if (pWindow)
+		{
+			switch (wParam)
+			{
+			case PBT_APMSUSPEND:
+				qDebug() << "System is suspending";
+                pWindow->lastPosition = pWindow->player->position();
+                pWindow->currentMedia = pWindow->player->media();
+                pWindow->wasPlaying = (pWindow->player->state() == QMediaPlayer::PlayingState);
+                pWindow->player->stop();
+				break;
+			case PBT_APMRESUMEAUTOMATIC:
+			case PBT_APMRESUMESUSPEND:
+				qDebug() << "System is resuming";
+                pWindow->handleSystemResume();
+				break;
+			}
+		}
+	}
+	return DefWindowProc(hwnd, message, wParam, lParam);
+}
+#endif 
+
+void MPlayer::handleSystemResume()
+{
+	// 延迟重新初始化播放器，给系统一些时间来重新初始化音频设备  
+	reinitTimer->start(2000);  // 2秒后重新初始化  
+}
+
+void MPlayer::reinitializePlayer()
+{
+    qDebug() << __FUNCTION__;
+	// 重新创建播放器  
+	delete player;
+	player = new QMediaPlayer(this);
+
+	// 重新设置媒体和位置  
+	player->setMedia(currentMedia);
+	player->setPosition(lastPosition);
+
+	// 如果之前在播放，则恢复播放  
+	if (wasPlaying)
+	{
+		player->play();
+	}
+}

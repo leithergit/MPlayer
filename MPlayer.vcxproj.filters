@@ -67,4 +67,15 @@
       <Filter>Source Files</Filter>
     </QtRcc>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MPlayer.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\multimedia-audio.ico" />
+  </ItemGroup>
 </Project>

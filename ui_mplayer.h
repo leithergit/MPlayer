@@ -43,6 +43,7 @@ public:
     QLabel *timeLabel;
     QHBoxLayout *horizontalLayout;
     QPushButton *playButton;
+    QPushButton *restartButton;
     QPushButton *stopButton;
     QPushButton *prevButton;
     QPushButton *nextButton;
@@ -154,12 +155,22 @@ public:
 
         horizontalLayout->addWidget(playButton);
 
+        restartButton = new QPushButton(MPlayer);
+        restartButton->setObjectName(QString::fromUtf8("restartButton"));
+        restartButton->setMinimumSize(QSize(40, 24));
+        QIcon icon1;
+        icon1.addFile(QString::fromUtf8(":/Restart"), QSize(), QIcon::Normal, QIcon::Off);
+        restartButton->setIcon(icon1);
+        restartButton->setIconSize(QSize(24, 24));
+
+        horizontalLayout->addWidget(restartButton);
+
         stopButton = new QPushButton(MPlayer);
         stopButton->setObjectName(QString::fromUtf8("stopButton"));
         stopButton->setMinimumSize(QSize(40, 24));
-        QIcon icon1;
-        icon1.addFile(QString::fromUtf8(":/Stop"), QSize(), QIcon::Normal, QIcon::Off);
-        stopButton->setIcon(icon1);
+        QIcon icon2;
+        icon2.addFile(QString::fromUtf8(":/Stop"), QSize(), QIcon::Normal, QIcon::Off);
+        stopButton->setIcon(icon2);
         stopButton->setIconSize(QSize(24, 24));
 
         horizontalLayout->addWidget(stopButton);
@@ -167,9 +178,9 @@ public:
         prevButton = new QPushButton(MPlayer);
         prevButton->setObjectName(QString::fromUtf8("prevButton"));
         prevButton->setMinimumSize(QSize(40, 24));
-        QIcon icon2;
-        icon2.addFile(QString::fromUtf8(":/Pre"), QSize(), QIcon::Normal, QIcon::Off);
-        prevButton->setIcon(icon2);
+        QIcon icon3;
+        icon3.addFile(QString::fromUtf8(":/Pre"), QSize(), QIcon::Normal, QIcon::Off);
+        prevButton->setIcon(icon3);
         prevButton->setIconSize(QSize(24, 24));
 
         horizontalLayout->addWidget(prevButton);
@@ -177,9 +188,9 @@ public:
         nextButton = new QPushButton(MPlayer);
         nextButton->setObjectName(QString::fromUtf8("nextButton"));
         nextButton->setMinimumSize(QSize(40, 24));
-        QIcon icon3;
-        icon3.addFile(QString::fromUtf8(":/Next"), QSize(), QIcon::Normal, QIcon::Off);
-        nextButton->setIcon(icon3);
+        QIcon icon4;
+        icon4.addFile(QString::fromUtf8(":/Next"), QSize(), QIcon::Normal, QIcon::Off);
+        nextButton->setIcon(icon4);
         nextButton->setIconSize(QSize(24, 24));
 
         horizontalLayout->addWidget(nextButton);
@@ -187,9 +198,9 @@ public:
         playModeButton = new QPushButton(MPlayer);
         playModeButton->setObjectName(QString::fromUtf8("playModeButton"));
         playModeButton->setMinimumSize(QSize(40, 24));
-        QIcon icon4;
-        icon4.addFile(QString::fromUtf8(":/Loop"), QSize(), QIcon::Normal, QIcon::Off);
-        playModeButton->setIcon(icon4);
+        QIcon icon5;
+        icon5.addFile(QString::fromUtf8(":/Loop"), QSize(), QIcon::Normal, QIcon::Off);
+        playModeButton->setIcon(icon5);
         playModeButton->setIconSize(QSize(24, 24));
 
         horizontalLayout->addWidget(playModeButton);
@@ -228,9 +239,9 @@ public:
         SchuduleButton->setObjectName(QString::fromUtf8("SchuduleButton"));
         SchuduleButton->setMinimumSize(QSize(40, 0));
         SchuduleButton->setMaximumSize(QSize(60, 16777215));
-        QIcon icon5;
-        icon5.addFile(QString::fromUtf8(":/Schedule"), QSize(), QIcon::Normal, QIcon::Off);
-        SchuduleButton->setIcon(icon5);
+        QIcon icon6;
+        icon6.addFile(QString::fromUtf8(":/Schedule"), QSize(), QIcon::Normal, QIcon::Off);
+        SchuduleButton->setIcon(icon6);
         SchuduleButton->setIconSize(QSize(24, 24));
         SchuduleButton->setCheckable(true);
 
@@ -260,9 +271,9 @@ public:
         addButton = new QPushButton(MPlayer);
         addButton->setObjectName(QString::fromUtf8("addButton"));
         addButton->setMinimumSize(QSize(40, 24));
-        QIcon icon6;
-        icon6.addFile(QString::fromUtf8(":/Add"), QSize(), QIcon::Normal, QIcon::Off);
-        addButton->setIcon(icon6);
+        QIcon icon7;
+        icon7.addFile(QString::fromUtf8(":/Add"), QSize(), QIcon::Normal, QIcon::Off);
+        addButton->setIcon(icon7);
         addButton->setIconSize(QSize(24, 24));
 
         horizontalLayout_2->addWidget(addButton);
@@ -270,9 +281,9 @@ public:
         removeButton = new QPushButton(MPlayer);
         removeButton->setObjectName(QString::fromUtf8("removeButton"));
         removeButton->setMinimumSize(QSize(40, 24));
-        QIcon icon7;
-        icon7.addFile(QString::fromUtf8(":/Remove"), QSize(), QIcon::Normal, QIcon::Off);
-        removeButton->setIcon(icon7);
+        QIcon icon8;
+        icon8.addFile(QString::fromUtf8(":/Remove"), QSize(), QIcon::Normal, QIcon::Off);
+        removeButton->setIcon(icon8);
         removeButton->setIconSize(QSize(24, 24));
 
         horizontalLayout_2->addWidget(removeButton);
@@ -280,9 +291,9 @@ public:
         clearButton = new QPushButton(MPlayer);
         clearButton->setObjectName(QString::fromUtf8("clearButton"));
         clearButton->setMinimumSize(QSize(40, 24));
-        QIcon icon8;
-        icon8.addFile(QString::fromUtf8(":/Clear"), QSize(), QIcon::Normal, QIcon::Off);
-        clearButton->setIcon(icon8);
+        QIcon icon9;
+        icon9.addFile(QString::fromUtf8(":/Clear"), QSize(), QIcon::Normal, QIcon::Off);
+        clearButton->setIcon(icon9);
         clearButton->setIconSize(QSize(24, 24));
 
         horizontalLayout_2->addWidget(clearButton);
@@ -308,6 +319,10 @@ public:
         playButton->setToolTip(QCoreApplication::translate("MPlayer", "\346\222\255\346\224\276", nullptr));
 #endif // QT_CONFIG(tooltip)
         playButton->setText(QString());
+#if QT_CONFIG(tooltip)
+        restartButton->setToolTip(QCoreApplication::translate("MPlayer", "\345\201\234\346\255\242", nullptr));
+#endif // QT_CONFIG(tooltip)
+        restartButton->setText(QString());
 #if QT_CONFIG(tooltip)
         stopButton->setToolTip(QCoreApplication::translate("MPlayer", "\345\201\234\346\255\242", nullptr));
 #endif // QT_CONFIG(tooltip)

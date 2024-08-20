@@ -226,6 +226,15 @@ copy /y  $(ProjectDir)TagLib\bin\tag.dll $(TargetDir)</Command>
   <ItemGroup>
     <QtRcc Include="resource.qrc" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MPlayer.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\multimedia-audio.ico" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(QtMsBuild)\qt.targets" Condition="Exists('$(QtMsBuild)\qt.targets')" />
   <ImportGroup Label="ExtensionTargets" />

@@ -36,7 +36,7 @@ public:
 protected:
 	void closeEvent(QCloseEvent* event) override;
 #ifdef Q_OS_WIN  
-	//bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
+	bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
 #endif
 private slots:
     void on_playModeButton_clicked();
@@ -65,6 +65,9 @@ private slots:
     void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
 	void onCurrentMediaChanged(const QMediaContent& content);
 
+    void on_restartButton_clicked();
+    void reinitializePlayer();
+
 private:
     enum PlayMode {
         Sequential,
@@ -79,8 +82,10 @@ private:
 	bool isVolumeFading;
     int remainingTime = 0;
     QTimer *scheduleTimer;
+	QTimer* singlePlayTimer;
     bool isScheduleActive;
     PlayMode currentPlayMode;
+    bool bPlayingBeforeClose = false;
     QIcon sequentialIcon;
     QIcon randomIcon;
     QIcon singleLoopIcon;
@@ -90,6 +95,8 @@ private:
     QMediaPlaylist *playlist;
     QTimer *fadeOutTimer;
     QStandardItemModel *playlistModel;
+    QMetaObject::Connection seekkableConnect;
+    QMetaObject::Connection positionChangedConnect;
     void setupConnections();
 	void saveSettings();
 	void loadSettings();
@@ -100,9 +107,21 @@ private:
     void updatePlaylistView();
     QString formatTime(qint64 milliseconds);
     void loadFileMetadata(const QString &filePath);
+    void handleSystemResume();
 
-    QString lastPlayedFile;
-    int lastPlayedPosition;
+    int lastPlayedIndex = -1;
+    int lastPlayedPosition = 0;
+
+	QTimer* reinitTimer;
+	qint64 lastPosition;
+	QMediaContent currentMedia;
+	bool wasPlaying;
+
+#ifdef Q_OS_WIN  
+	static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+	HPOWERNOTIFY m_powerNotify;
+#endif 
+
 
 };
 #endif // MPLAYER_H
