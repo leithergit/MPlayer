@@ -116,6 +116,8 @@ MPlayer::MPlayer(QWidget *parent)
     adjustComboBoxWidth(ui->OperationcomboBox);
     loadSettings();
     setWindowFlags( Qt::WindowCloseButtonHint);
+    
+    currentPlayMode = Sequential;
     loadPlaylist();
     player->setPlaylist(playlist);
     ui->playlist->setModel(playlistModel);
@@ -154,8 +156,6 @@ MPlayer::MPlayer(QWidget *parent)
     }
 
     setupConnections();
-
-    currentPlayMode = Sequential;
 
     sequentialIcon.addFile(QString::fromUtf8(":/Sequential"), QSize(), QIcon::Normal, QIcon::Off);
     randomIcon.addFile(QString::fromUtf8(":/Shuffle"), QSize(), QIcon::Normal, QIcon::Off);
@@ -266,16 +266,19 @@ void MPlayer::setupConnections()
 		}
 	});
 
-	connect(player, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status) {
-		qDebug() << "Media status changed:" << status;
-	});
-
-	connect(player, &QMediaPlayer::stateChanged, this, [this](QMediaPlayer::State state) {
-		qDebug() << "Player state changed:" << state;
-	});
     connect(player, &QMediaPlayer::mediaStatusChanged, this, &MPlayer::onMediaStatusChanged);
     connect(player, &QMediaPlayer::stateChanged, this, [this](QMediaPlayer::State state)
     {
+        qDebug() << "Player state changed:" << state;
+		if (state == QMediaPlayer::PlayingState)
+        {
+            preventSleep();
+        }
+		else if (state == QMediaPlayer::StoppedState ||
+                 state == QMediaPlayer::PausedState)
+        {
+			allowSleep();
+        }
         ui->playButton->setToolTip(state == QMediaPlayer::PlayingState ? "暂停" : "播放");
     });
 
@@ -755,6 +758,8 @@ void MPlayer::on_restartButton_clicked()
         if (player->state() != QMediaPlayer::PlayingState)
         {
             player->play();
+			ui->playButton->setToolTip("暂停");
+			ui->playButton->setIcon(PauseIcon);
         }
     }
 }
@@ -841,3 +846,15 @@ void MPlayer::reinitializePlayer()
 		player->play();
 	}
 }
+
+#ifdef Q_OS_WIN  
+void MPlayer::preventSleep()
+{
+	SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
+}
+
+void MPlayer::allowSleep()
+{
+	SetThreadExecutionState(ES_CONTINUOUS);
+}
+#endif

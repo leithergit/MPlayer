@@ -104,10 +104,16 @@ private:
 	void ensureWindowIsOnScreen();
     void loadPlaylist();
     void savePlaylist();
+    
     void updatePlaylistView();
     QString formatTime(qint64 milliseconds);
     void loadFileMetadata(const QString &filePath);
     void handleSystemResume();
+
+#ifdef Q_OS_WIN  
+    void preventSleep();
+    void allowSleep();
+#endif
 
     int lastPlayedIndex = -1;
     int lastPlayedPosition = 0;
